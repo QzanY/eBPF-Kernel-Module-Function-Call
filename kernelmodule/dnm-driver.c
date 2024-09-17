@@ -31,18 +31,23 @@ static int count;
 module_param_array(myArray,int,count,0);
 */
 
+//Here we define our function to be called in the eBPF program
 __bpf_kfunc_start_defs();
 
-__bpf_kfunc int put_31_haha(void) 
+__bpf_kfunc int put_num_haha(void) 
 {
     return 32;
 }
 
 __bpf_kfunc_end_defs();
 
+// Here we set the flags, it is important for the registration or the function to the kernel. 
+// I set the flag as 0 because this function doesn't do anything
 BTF_SET8_START(btf_kfunc_id_set)
+BTF_ID_FLAGS(func, put_num_haha, 0)
 BTF_SET8_END(btf_kfunc_id_set)
 
+// This struct is used for registration. We register the function at the end of the custom_init function.
 static const struct btf_kfunc_id_set kfunc_id_set = {
     .owner = THIS_MODULE,
     .set = &btf_kfunc_id_set,
@@ -148,6 +153,7 @@ static int __init custom_init(void)
     pr_info("I was assigned major number %d.\n", major);
     pr_info("Device created on /dev/%s\n", DEVICE_NAME);
 
+    //Register the function to be called from the eBPF program.
     register_btf_kfunc_id_set(BPF_PROG_TYPE_XDP, &kfunc_id_set);
     
     return SUCCESS;
