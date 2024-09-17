@@ -26,7 +26,7 @@ Then you can call it in the code anywhere. Then you can load the program to the 
 You don't need to do anything to include put_num_haha function here because bpf_object__load() function does everything for you.(It populates the fd_array parameter in bpf() syscall with the BTF fd of the kernel module you are using)\
 You can compile the code with:
 ```bash
-./compile
+./compile.sh
 ```
 Then you can load the XDP program with:
 ```bash
