@@ -5,8 +5,6 @@
 #include <linux/if_ether.h>
 #include <arpa/inet.h>
 
-// #define DEBUG
-
 #define ETH_P_IP 0x0800
 
 #ifndef DEBUG
@@ -57,15 +55,8 @@ int xdp_prog(struct xdp_md *ctx) {
     }
     if (ip->protocol == IPPROTO_ICMP)
 	{
-        #ifndef DEBUG
-    	__u32 key = 0;
+    	    __u32 key = 0;
 	    bpf_tail_call(ctx,&program_array,key);
-        #else
-        char fmt[] = "PAcket receivec\n";
-        bpf_trace_printk(fmt,sizeof(fmt));
-        return XDP_PASS;
-        #endif
-
 	}
 
     int a = put_num_haha();
