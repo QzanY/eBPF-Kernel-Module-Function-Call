@@ -12,8 +12,6 @@
 
 #define PROG_ARRAY_MAP_NAME "program_array"
 
-// #define DEBUG
-
 static int ifindex, prog_fd_prog, prog_fd_check, map_fd, ret ,dev_fd;
 
 int load_bpf_object_file(const char *filename, struct bpf_object **obj) {
@@ -50,7 +48,6 @@ void cleanup(int ifindex,int prog_fd,int check_fd, int map_fd)
         close(prog_fd);
     }
 
-#ifndef DEBUG
     if (check_fd) {
         close(check_fd);
     }
@@ -62,8 +59,6 @@ void cleanup(int ifindex,int prog_fd,int check_fd, int map_fd)
     {
         fprintf(stderr,"Failed to unpin\n");
     }
-    close(dev_fd);
-#endif
     printf("Cleaned up and exiting\n");
     exit(0);
 
@@ -98,7 +93,6 @@ int main() {
         return 1;
     }
 
-#ifndef DEBUG
     // Load the tail called XDP program
     if (load_bpf_object_file("xdp_check.o", &obj_check)) {
         return 1;
@@ -150,7 +144,6 @@ int main() {
         fprintf(stderr, "Failed to update program_array with xdp_check program\n");
         return 1;
     }
-#endif
 
     ifindex = if_nametoindex("enp0s9");  // Replace with your interface name
     if (ifindex == 0) {
@@ -158,42 +151,7 @@ int main() {
         return 1;
     }
 
-#ifdef DEBUG
-    dev_fd = open("/sys/kernel/btf/dnm_driver", O_RDONLY);
-    printf("dev_fd: %d\n",dev_fd);
-    char log_buf[100];
 
-    struct bpf_insn insn = {
-        .code = BPF_LDX,
-        .dst_reg = BPF_REG_8,
-        .src_reg = 0,
-        .off = 0,
-        .imm = 0,
-    };
-
-    int fd_arr[1] = {dev_fd};
-    struct bpf_prog_load_opts oppts = {
-        .kern_version = KERNEL_VERSION(6, 8, 0),
-        .sz = sizeof(struct bpf_prog_load_opts),
-        .expected_attach_type = BPF_XDP,
-        .fd_array = fd_arr,
-        .prog_btf_fd = prog_fd_prog,
-        .prog_flags = 0,
-        .prog_ifindex = ifindex,
-        .log_buf = log_buf,
-        .log_size = sizeof(log_buf),
-        .log_level = 2,
-    };
-    ret = bpf_prog_load(BPF_PROG_TYPE_XDP,"xdp_prog","GPL",&insn,sizeof(insn),&oppts);
-    if (ret < 0) {
-        printf("log: %s\n",log_buf);
-        printf("Failed to load xdp_prog: %s\n", strerror(-ret));
-        cleanup(ifindex,prog_fd_prog, prog_fd_check, map_fd);
-        return 1;
-    }
-#endif
-
-#ifndef DEBUG
     // Attach the main XDP program to an interface
     struct bpf_xdp_attach_opts *opts;
 
@@ -204,7 +162,6 @@ int main() {
         cleanup(ifindex,prog_fd_prog, prog_fd_check, map_fd);
         return 1;
     }
-#endif
     printf("XDP programs loaded and tail call set up successfully.\n");
 
     signal(SIGINT, signal_handler);
