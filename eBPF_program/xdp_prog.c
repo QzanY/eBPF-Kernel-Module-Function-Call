@@ -7,14 +7,12 @@
 
 #define ETH_P_IP 0x0800
 
-#ifndef DEBUG
 struct {
     __uint(type, BPF_MAP_TYPE_PROG_ARRAY);
     __uint(max_entries, 3);  // Just one entry for this example
     __type(key, __u32);
     __type(value, __u32);
 } program_array SEC(".maps");
-#endif
 
 extern int put_num_haha(void) __ksym;
 
