@@ -41,7 +41,7 @@ __bpf_kfunc int put_num_haha(void)
 
 __bpf_kfunc_end_defs();
 
-// Here we set the flags, it is important for the registration or the function to the kernel. 
+// Here we set the flags, it is important for the registration of the function to the kernel. 
 // I set the flag as 0 because this function doesn't do anything
 BTF_SET8_START(btf_kfunc_id_set)
 BTF_ID_FLAGS(func, put_num_haha, 0)
