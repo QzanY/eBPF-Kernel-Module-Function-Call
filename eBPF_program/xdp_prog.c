@@ -7,6 +7,7 @@
 
 #define ETH_P_IP 0x0800
 
+//Not important for our context
 struct {
     __uint(type, BPF_MAP_TYPE_PROG_ARRAY);
     __uint(max_entries, 3);  // Just one entry for this example
@@ -14,6 +15,7 @@ struct {
     __type(value, __u32);
 } program_array SEC(".maps");
 
+//This is how we fetch the function from the kernel module. The __ksym macro is important.
 extern int put_num_haha(void) __ksym;
 
 SEC("xdp")
@@ -53,10 +55,12 @@ int xdp_prog(struct xdp_md *ctx) {
     }
     if (ip->protocol == IPPROTO_ICMP)
 	{
+	//This part is not important in our context
     	    __u32 key = 0;
 	    bpf_tail_call(ctx,&program_array,key);
 	}
-
+	
+//*********************************Here, we call the function*******************************
     int a = put_num_haha();
     char fmt[] = "Printing the num: %d\n";
     bpf_trace_printk(fmt,sizeof(fmt),a);
